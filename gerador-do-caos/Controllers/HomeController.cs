@@ -58,17 +58,20 @@ namespace gerador_do_caos.Controllers
             Task.Run(() =>
             {
                 var lists = new List<byte[]>();
-                for (int i = 0; i < 100; i++) // Ajuste o número de iterações conforme necessário
+                for (int i = 0; i < 2; i++)
                 {
-                    // Aloca 500MB de memória em cada iteração
                     lists.Add(new byte[1024 * 1024 * 500]);
-                    Thread.Sleep(1000); // Espera 1 segundo entre as alocações
+                    Thread.Sleep(500); // Reduzir o delay
                 }
 
-                // Mantém a memória alocada por um tempo antes de liberá-la
-                Thread.Sleep(30000); // Manter a memória alocada por 30 segundos
+                // Manter a memória alocada por menos tempo antes de liberá-la
+                Thread.Sleep(3000); // Manter por 3 segundos
+
+
                 lists.Clear(); // Libera a memória
                 GC.Collect(); // Força a coleta de lixo para liberar memória
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
             });
 
             return RedirectToAction("Index");
