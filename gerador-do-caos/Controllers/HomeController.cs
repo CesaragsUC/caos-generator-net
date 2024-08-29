@@ -13,7 +13,7 @@ namespace gerador_do_caos.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             string hostName = string.Empty;
 
@@ -35,44 +35,42 @@ namespace gerador_do_caos.Controllers
 
         // Simular alto uso de CPU
         [HttpPost]
-        public IActionResult HighCpuUsage()
+        public async Task<IActionResult> HighCpuUsage()
         {
-            Task.Run(() =>
+            var watch = Stopwatch.StartNew();
+            while (watch.ElapsedMilliseconds < 10000) // Estressar CPU por 10 segundos
             {
-                var watch = Stopwatch.StartNew();
-                while (watch.ElapsedMilliseconds < 10000) // Estressar CPU por 10 segundos
-                {
-                    // Operação pesada na CPU
-                    Math.Pow(2, 20);
-                }
-                watch.Stop();
-            });
+                // Operação pesada na CPU
+                Math.Pow(2, 20);
+            }
+            watch.Stop();
 
             return RedirectToAction("Index");
         }
 
         // Simular alto consumo de memória
         [HttpPost]
-        public IActionResult HighMemoryUsage()
+        public async Task<IActionResult> HighMemoryUsage()
         {
-            Task.Run(() =>
+            int maxIterations = 2; // Ajuste o número de iterações conforme necessário
+
+            for (int i = 0; i < maxIterations; i++)
             {
-                var lists = new List<byte[]>();
-                for (int i = 0; i < 2; i++)
+                using (var largeObject = new LargeObject())
                 {
-                    lists.Add(new byte[1024 * 1024 * 500]);
-                    Thread.Sleep(500); // Reduzir o delay
+                    // Simulando uma operação que utiliza o objeto
+                    largeObject.DoSomething(i);
+
+                    Thread.Sleep(1000); // Aguarda 1 segundo
                 }
 
-                // Manter a memória alocada por menos tempo antes de liberá-la
-                Thread.Sleep(3000); // Manter por 3 segundos
+                _logger.LogWarning($"Iteração {i} concluída.");
 
+            }
 
-                lists.Clear(); // Libera a memória
-                GC.Collect(); // Força a coleta de lixo para liberar memória
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-            });
+            GC.Collect(); 
+            GC.WaitForPendingFinalizers(); 
+            GC.Collect(); 
 
             return RedirectToAction("Index");
         }
@@ -85,22 +83,5 @@ namespace gerador_do_caos.Controllers
             return RedirectToAction("Index");
         }
 
-        // Simular indisponibilidade temporária
-        [HttpPost]
-        public IActionResult TemporaryUnavailability()
-        {
-            Task.Run(() =>
-            {
-                Thread.Sleep(10000); // Tornar a aplicação indisponível por 10 segundos
-            });
-
-            return RedirectToAction("Index");
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
     }
 }
