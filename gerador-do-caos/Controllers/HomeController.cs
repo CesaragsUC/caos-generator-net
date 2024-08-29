@@ -15,6 +15,21 @@ namespace gerador_do_caos.Controllers
 
         public IActionResult Index()
         {
+            string hostName = string.Empty;
+
+            // Obtém o nome do nó Kubernetes (host) da variável de ambiente
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HOSTNAME")))
+            {
+                // Se não estiver no Kubernetes, retorna o nome da máquina local
+                hostName = Environment.MachineName;
+            }
+            else
+            {
+                hostName = Environment.GetEnvironmentVariable("HOSTNAME");
+            }
+
+            ViewBag.HostName = hostName;
+
             return View();
         }
 
