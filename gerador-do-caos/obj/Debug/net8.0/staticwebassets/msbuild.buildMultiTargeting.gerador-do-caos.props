@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\gerador-do-caos.props" />
+</Project>
